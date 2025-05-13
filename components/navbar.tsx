@@ -75,7 +75,7 @@ export function Navbar() {
             Discover Events
           </Link>
           <Link
-            href="/create"
+            href="/create-event"
             className="text-sm font-medium hover:text-primary transition-colors"
           >
             Create Event

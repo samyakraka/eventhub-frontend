@@ -1,95 +1,114 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ChevronLeft, CreditCard, Check } from "lucide-react"
-import { useRouter } from 'next/navigation';
-
+import { useState } from "react";
+import Link from "next/link";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ChevronLeft, CreditCard, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage({ params }: { params: { id: string } }) {
-  const [step, setStep] = useState(1)
-  const [ticketType, setTicketType] = useState("standard")
-  const [ticketQuantity, setTicketQuantity] = useState(1)
+  const [step, setStep] = useState(1);
+  const [ticketType, setTicketType] = useState("standard");
+  const [ticketQuantity, setTicketQuantity] = useState(1);
 
   const handleNext = () => {
-    setStep(step + 1)
-    window.scrollTo(0, 0)
-  }
+    setStep(step + 1);
+    window.scrollTo(0, 0);
+  };
 
   const handleBack = () => {
-    setStep(step - 1)
-    window.scrollTo(0, 0)
-  }
-  const [attendee, setAttendee] = useState({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      company: "",
-      referral: "social", // default value
-    });
-  const router = useRouter()
-  
-  const handleComplete = async () => {
-    if (!attendee.email || !attendee.firstName || !attendee.lastName) {
-      alert("Please fill in all required fields.");
-      return;
-    } 
-  
-    const registrationData = {
-      eventId: params.id,
-      userId: "current-user-id", // You'll need to get this from your auth system
-      ticketId: "generated-ticket-id", // Generate or get this from your ticket system
-      customFields: {
-        firstName: attendee.firstName,
-        lastName: attendee.lastName,
-        email: attendee.email,
-        phone: attendee.phone,
-        company: attendee.company,
-        referral: attendee.referral
-      },
-      // qrCode: generateQRCode(), // Implement this function
-      isCheckedIn: false,
-      checkedInAt: null // Will be set when checked in
-    };
-  
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registrations/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(registrationData),
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed.");
-      }
-  
-      const result = await response.json();
-  
-      router.push(
-        `/qrcode?email=${attendee.email}&firstName=${attendee.firstName}&lastName=${attendee.lastName}`
-      );
-    } catch (error) {
-      console.error("Error during registration:", error);
-      alert("There was an issue completing your registration. Please try again.");
-    }
+    setStep(step - 1);
+    window.scrollTo(0, 0);
   };
-  
+  const [attendee, setAttendee] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    company: "",
+    referral: "social", // default value
+  });
+  const router = useRouter();
+
+  const handleComplete = async () => {
+  if (!attendee.email || !attendee.firstName || !attendee.lastName) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  // Fallback for testing - Replace with real auth & ticket logic
+  const userId = "current-user-id"; // Replace with auth system logic
+  const ticketId = "generated-ticket-id"; // Replace with actual ticket logic
+
+  const registrationData = {
+    eventId: params?.id,
+    userId,
+    ticketId,
+    customFields: {
+      firstName: attendee.firstName,
+      lastName: attendee.lastName,
+      email: attendee.email,
+      phone: attendee.phone || "",       // Avoid undefined
+      company: attendee.company || "",   // Avoid undefined
+      referral: attendee.referral || "", // Avoid undefined
+    },
+    isCheckedIn: false,
+    checkedInAt: null,
+  };
+
+  try {
+    // const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registrations`;
+
+    // if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
+    //   throw new Error("API base URL is not defined in env");
+    // }
+
+    // const response = await fetch(apiUrl, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   credentials: "include", // Optional if using cookies/session
+    //   body: JSON.stringify(registrationData),
+    // });
+
+    // const responseText = await response.text();
+
+    // if (!response.ok) {
+    //   let errorMessage = "Registration failed.";
+    //   try {
+    //     const errorJson = JSON.parse(responseText);
+    //     errorMessage = errorJson.message || errorMessage;
+    //   } catch (parseErr) {
+    //     console.error("Server responded with non-JSON error:", responseText);
+    //   }
+    //   throw new Error(errorMessage);
+    // }
+
+    // const result = JSON.parse(responseText);
+    // console.log("Registration Success:", result);
+
+    router.push(
+      `/qrcode?email=${attendee.email}&firstName=${attendee.firstName}&lastName=${attendee.lastName}`
+    );
+  } catch (error) {
+    console.error("Error during registration:", error);
+    alert(
+      "There was an issue completing your registration. Please try again."
+    );
+  }
+};
 
   // Calculate total price
   const getPrice = () => {
-    const basePrice = ticketType === "standard" ? 299 : 599
-    return basePrice * ticketQuantity
-  }
+    const basePrice = ticketType === "standard" ? 299 : 599;
+    return basePrice * ticketQuantity;
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -105,7 +124,9 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
               <ChevronLeft className="h-4 w-4 mr-1" /> Back to Event
             </Link>
             <h1 className="text-3xl font-bold">Register for Event</h1>
-            <p className="text-muted-foreground">Complete the registration process to secure your spot.</p>
+            <p className="text-muted-foreground">
+              Complete the registration process to secure your spot.
+            </p>
           </div>
 
           {/* Progress Steps */}
@@ -114,12 +135,20 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
               <div key={i} className="flex items-center">
                 <div
                   className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                    step >= i ? "gradient-bg text-white" : "bg-muted text-muted-foreground"
+                    step >= i
+                      ? "gradient-bg text-white"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {step > i ? <Check className="h-5 w-5" /> : i}
                 </div>
-                {i < 3 && <div className={`h-1 w-16 md:w-32 ${step > i ? "gradient-bg" : "bg-muted"}`}></div>}
+                {i < 3 && (
+                  <div
+                    className={`h-1 w-16 md:w-32 ${
+                      step > i ? "gradient-bg" : "bg-muted"
+                    }`}
+                  ></div>
+                )}
               </div>
             ))}
           </div>
@@ -136,33 +165,74 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                     <div className="grid gap-4">
                       <div
                         className={`relative rounded-lg border p-4 transition-all ${
-                          ticketType === "standard" ? "border-primary ring-2 ring-primary/20" : ""
+                          ticketType === "standard"
+                            ? "border-primary ring-2 ring-primary/20"
+                            : ""
                         }`}
                       >
-                        <RadioGroupItem value="standard" id="standard" className="absolute right-4 top-4" />
+                        <RadioGroupItem
+                          value="standard"
+                          id="standard"
+                          className="absolute right-4 top-4"
+                        />
                         <div className="flex justify-between">
-                          <Label htmlFor="standard" className="text-lg font-medium">
+                          <Label
+                            htmlFor="standard"
+                            className="text-lg font-medium"
+                          >
                             Standard Ticket
                           </Label>
                           <div className="text-xl font-bold">$299</div>
                         </div>
-                        <p className="text-muted-foreground mt-1 mb-3">General admission with access to all sessions</p>
+                        <p className="text-muted-foreground mt-1 mb-3">
+                          General admission with access to all sessions
+                        </p>
                         <ul className="space-y-1 text-sm">
                           <li className="flex items-center gap-2">
-                            <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-4 w-4 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             Access to all sessions
                           </li>
                           <li className="flex items-center gap-2">
-                            <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-4 w-4 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             Lunch and refreshments
                           </li>
                           <li className="flex items-center gap-2">
-                            <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-4 w-4 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             Conference materials
                           </li>
@@ -171,39 +241,87 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
 
                       <div
                         className={`relative rounded-lg border p-4 transition-all ${
-                          ticketType === "vip" ? "border-primary ring-2 ring-primary/20" : ""
+                          ticketType === "vip"
+                            ? "border-primary ring-2 ring-primary/20"
+                            : ""
                         }`}
                       >
-                        <RadioGroupItem value="vip" id="vip" className="absolute right-4 top-4" />
+                        <RadioGroupItem
+                          value="vip"
+                          id="vip"
+                          className="absolute right-4 top-4"
+                        />
                         <div className="flex justify-between">
                           <Label htmlFor="vip" className="text-lg font-medium">
                             VIP Ticket
                           </Label>
                           <div className="text-xl font-bold">$599</div>
                         </div>
-                        <p className="text-muted-foreground mt-1 mb-3">Premium experience with exclusive perks</p>
+                        <p className="text-muted-foreground mt-1 mb-3">
+                          Premium experience with exclusive perks
+                        </p>
                         <ul className="space-y-1 text-sm">
                           <li className="flex items-center gap-2">
-                            <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-4 w-4 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             All Standard ticket benefits
                           </li>
                           <li className="flex items-center gap-2">
-                            <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-4 w-4 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             VIP lounge access
                           </li>
                           <li className="flex items-center gap-2">
-                            <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-4 w-4 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             Exclusive networking event
                           </li>
                           <li className="flex items-center gap-2">
-                            <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-4 w-4 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             Speaker meet & greet
                           </li>
@@ -220,22 +338,30 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                       type="button"
                       variant="outline"
                       size="icon"
-                      onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
+                      onClick={() =>
+                        setTicketQuantity(Math.max(1, ticketQuantity - 1))
+                      }
                       disabled={ticketQuantity <= 1}
                     >
                       -
                     </Button>
-                    <div className="w-16 text-center font-medium">{ticketQuantity}</div>
+                    <div className="w-16 text-center font-medium">
+                      {ticketQuantity}
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
-                      onClick={() => setTicketQuantity(Math.min(10, ticketQuantity + 1))}
+                      onClick={() =>
+                        setTicketQuantity(Math.min(10, ticketQuantity + 1))
+                      }
                       disabled={ticketQuantity >= 10}
                     >
                       +
                     </Button>
-                    <div className="ml-4 text-sm text-muted-foreground">(Maximum 10 tickets per order)</div>
+                    <div className="ml-4 text-sm text-muted-foreground">
+                      (Maximum 10 tickets per order)
+                    </div>
                   </div>
                 </div>
 
@@ -250,10 +376,15 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                 <div className="border-t pt-6 mt-6">
                   <div className="flex justify-between items-center mb-6">
                     <div className="text-lg font-medium">Total</div>
-                    <div className="text-2xl font-bold">${getPrice().toFixed(2)}</div>
+                    <div className="text-2xl font-bold">
+                      ${getPrice().toFixed(2)}
+                    </div>
                   </div>
 
-                  <Button className="w-full gradient-bg button-glow py-6 text-lg" onClick={handleNext}>
+                  <Button
+                    className="w-full gradient-bg button-glow py-6 text-lg"
+                    onClick={handleNext}
+                  >
                     Continue to Information
                   </Button>
                 </div>
@@ -272,13 +403,13 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                     <Label htmlFor="firstName">First Name</Label>
                     {/* <Input id="firstName" placeholder="John" /> */}
                     <Input
-                        id="firstName"
-                        placeholder="John"
-                        value={attendee.firstName}
-                        onChange={(e) =>
-                          setAttendee({ ...attendee, firstName: e.target.value })
-                        }
-                      />
+                      id="firstName"
+                      placeholder="John"
+                      value={attendee.firstName}
+                      onChange={(e) =>
+                        setAttendee({ ...attendee, firstName: e.target.value })
+                      }
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name</Label>
@@ -302,7 +433,9 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                     type="email"
                     placeholder="john.doe@example.com"
                     value={attendee.email}
-                    onChange={(e) => setAttendee({ ...attendee, email: e.target.value })}
+                    onChange={(e) =>
+                      setAttendee({ ...attendee, email: e.target.value })
+                    }
                   />
                 </div>
 
@@ -342,7 +475,10 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                   <Button variant="outline" onClick={handleBack}>
                     Back
                   </Button>
-                  <Button className="gradient-bg button-glow" onClick={handleNext}>
+                  <Button
+                    className="gradient-bg button-glow"
+                    onClick={handleNext}
+                  >
                     Continue to Payment
                   </Button>
                 </div>
@@ -353,16 +489,24 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
           {/* Step 3: Payment & Confirmation */}
           {step === 3 && (
             <div className="glass-effect rounded-xl p-6 md:p-8">
-              <h2 className="text-2xl font-bold mb-6">Payment & Confirmation</h2>
+              <h2 className="text-2xl font-bold mb-6">
+                Payment & Confirmation
+              </h2>
 
               <div className="space-y-6">
                 <div className="rounded-lg border p-4 bg-muted/10">
                   <h3 className="font-medium mb-4">Order Summary</h3>
                   <div className="flex justify-between mb-2">
-                    <span>{ticketType === "standard" ? "Standard Ticket" : "VIP Ticket"}</span>
+                    <span>
+                      {ticketType === "standard"
+                        ? "Standard Ticket"
+                        : "VIP Ticket"}
+                    </span>
                     <span>x{ticketQuantity}</span>
                   </div>
-                  <div className="text-sm text-muted-foreground mb-4">Tech Conference 2025</div>
+                  <div className="text-sm text-muted-foreground mb-4">
+                    Tech Conference 2025
+                  </div>
 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
@@ -396,7 +540,10 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
 
                       <div className="space-y-2">
                         <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+                        <Input
+                          id="cardNumber"
+                          placeholder="1234 5678 9012 3456"
+                        />
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -415,7 +562,12 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
 
                 <div className="rounded-lg border p-4 flex items-center">
                   <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mr-4">
-                    <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg
+                      className="h-8 w-8 text-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -427,7 +579,8 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                   <div>
                     <h4 className="font-medium">Your Ticket Will Be Emailed</h4>
                     <p className="text-sm text-muted-foreground">
-                      After payment, you'll receive a confirmation email with your ticket and QR code.
+                      After payment, you'll receive a confirmation email with
+                      your ticket and QR code.
                     </p>
                   </div>
                 </div>
@@ -436,7 +589,10 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
                   <Button variant="outline" onClick={handleBack}>
                     Back
                   </Button>
-                  <Button className="gradient-bg button-glow" onClick={handleComplete}>
+                  <Button
+                    className="gradient-bg button-glow"
+                    onClick={handleComplete}
+                  >
                     Complete Registration
                   </Button>
                 </div>
@@ -448,5 +604,5 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
 
       <Footer />
     </div>
-  )
+  );
 }

@@ -209,7 +209,7 @@ export default function SignupPage() {
     }
     try {
       await sendSignInLinkToEmail(auth, email, {
-        url: "http://localhost:3000/signup", // Use localhost for now
+        url: "https://eventhub2.vercel.app/signup", // Use localhost for now
         handleCodeInApp: true,
       });
       window.localStorage.setItem("emailForSignIn", email);
